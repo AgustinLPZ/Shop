@@ -1,0 +1,24 @@
+{% extends "catalog/base.html" %}
+
+{% block content %}
+  <h1>Products</h1>
+  <p><strong>Products:</strong> <a href="{% url 'product_detail' product.pk %}">{{ product.name }}</a></p>
+  <div style="margin-left:20px;margin-top:20px">
+    <h4>{{ product.name }}</h4>
+    <form method="post" action="{% url 'add_to_cart' product.pk %}">
+      {% csrf_token %}
+      <label for="quantity">Quantity:</label>
+      <input type="number" id="quantity" name="quantity" value="1" min="1">
+      <button type="submit">Add to Cart</button>
+    </form>
+    {% for copy in product.productinstance_set.all %}
+      <hr>
+      <p class="{% if copy.status == 'a' %}text-success{% elif copy.status == 's' %}text-danger{% else %}text-warning{% endif %}">
+        {{ copy.get_status_display }}
+      </p>
+      {% if copy.status != 'a' %}
+        <p><strong>SOLD OUT:</strong></p>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endblock %}

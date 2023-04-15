@@ -1,0 +1,12 @@
+{% extends 'catalog/base.html' %}
+
+{% block content %}
+  <h1>My Supplement Shop Home</h1>
+  <p>The Supplement Shop has the products:</p>
+  <ul>
+    <li><strong>Product:</strong> {{ num_product }}</li>
+
+
+  </ul>
+    <p>You have visited this page {{ num_visits }} time{{ num_visits|pluralize }}.</p>
+{% endblock %}
