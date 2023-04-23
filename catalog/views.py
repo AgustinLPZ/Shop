@@ -1,3 +1,5 @@
+from django.contrib.sites import requests
+from django.core.serializers import json
 from django.views import generic
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -57,8 +59,6 @@ def my_cart(request):
         cart_items = cart.cart_items()
         total_price = cart.total_price
     except Cart.DoesNotExist:
-        # create a new cart for the user
-        cart = Cart.objects.create(user=request.user)
         cart_items = []
         total_price = 0
     context = {
@@ -76,11 +76,38 @@ def checkout(request):
         # ...
         # After successful payment and order creation, clear cart
         cart_items = cart.cart_items()
+        total_price = cart.total_price
         for item in cart_items:
             item.delete()
-        return redirect('order_success')
+        # Send cart data to API Gateway
+        data = {'cart_items': list(cart_items.values()), 'total_price': total_price}
+        response = requests.post('https://ejdc9t7n54.execute-api.us-east-1.amazonaws.com/ShopOrders', json=data)
+        if response.status_code == 200:
+            return redirect('order_success')
+        else:
+            # Handle error
+            pass
     return render(request, 'catalog/checkout.html', {'cart': cart})
 
 
 def order_success(request):
     return render(request, 'catalog/order_success.html')
+
+
+def send_data_to_api(data):
+    endpoint_url = 'https://ejdc9t7n54.execute-api.us-east-1.amazonaws.com/ShopOrders'
+    headers = {'Content-Type': 'application/json'}
+    response = requests.post(endpoint_url, headers=headers, data=json.dumps(data))
+    if response.ok:
+        return response.json()
+    else:
+        return None
+
+
+def my_view(request):
+    # Your view logic here
+    cart = Cart.objects.get(user=request.user)
+    data = {'order_id': cart.id, 'customer_name': request.user.username, 'total_price': cart.total_price}
+    response_data = send_data_to_api(data)
+    # Process the response data here
+    return render(request, 'catalog/order_success.html', {'response_data': response_data})
