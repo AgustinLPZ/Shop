@@ -52,9 +52,15 @@ def add_to_cart(request, product_id):
 
 @login_required
 def my_cart(request):
-    cart = Cart.objects.get(user=request.user)
-    cart_items = cart.cart_items()
-    total_price = cart.total_price
+    try:
+        cart = Cart.objects.get(user=request.user)
+        cart_items = cart.cart_items()
+        total_price = cart.total_price
+    except Cart.DoesNotExist:
+        # create a new cart for the user
+        cart = Cart.objects.create(user=request.user)
+        cart_items = []
+        total_price = 0
     context = {
         'cart_items': cart_items,
         'total_price': total_price
@@ -69,7 +75,9 @@ def checkout(request):
         # Handle payment processing and order creation
         # ...
         # After successful payment and order creation, clear cart
-        cart.items.clear()
+        cart_items = cart.cart_items()
+        for item in cart_items:
+            item.delete()
         return redirect('order_success')
     return render(request, 'catalog/checkout.html', {'cart': cart})
 
