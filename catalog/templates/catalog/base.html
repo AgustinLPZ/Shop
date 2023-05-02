@@ -29,6 +29,11 @@
             <li class="nav-item">
                     <a class="nav-link" href="{% url 'my_cart' %} ">My Cart</a>
                 </li>
+                {% if user.is_superuser %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'order_list' %}">Orders</a>
+                </li>
+                {% endif %}
             </ul>
         </div>
                 <!--Display Login/Logout right-justified in navbar -->

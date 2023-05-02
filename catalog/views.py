@@ -7,8 +7,10 @@ from .models import Cart
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic.detail import DetailView
+from django.views.generic import ListView
 from .models import Product
 from .models import CartItem
+from django.contrib.sites.shortcuts import get_current_site
 
 
 def index(request):
@@ -111,3 +113,9 @@ def my_view(request):
     response_data = send_data_to_api(data)
     # Process the response data here
     return render(request, 'catalog/order_success.html', {'response_data': response_data})
+
+
+class OrderListView(ListView):
+    model = Cart
+    template_name = 'catalog/order_list.html'
+    context_object_name = 'orders'
